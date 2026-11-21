@@ -1,3 +1,8 @@
+# environment variables
+.env*.local
+.env
+.env.production
+
 # tools & scripts
 /mingit
 /mingit.zip

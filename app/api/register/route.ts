@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { registrationSchema } from "@/components/forms/shared/schema";
+import { sendPassEmail } from "@/lib/email";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
@@ -105,8 +106,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Dispatch pass confirmation email via Resend (non-blocking)
+    let emailSent = false;
+    let emailId: string | null = null;
+    try {
+      const emailRes = await sendPassEmail({
+        toEmail: inserted.email,
+        fullName: inserted.full_name,
+        passCode: inserted.pass_code,
+        passToken: inserted.pass_token,
+        collegeId: inserted.college_id,
+        collegeOther: inserted.college_other,
+        rapName: inserted.generated_rap_name || "MC HYDRA",
+      });
+      emailSent = emailRes.success;
+      if (emailRes.id) emailId = emailRes.id;
+    } catch (e) {
+      console.error("Resend pass email failed:", e);
+    }
+
     return NextResponse.json({
       success: true,
+      emailSent,
+      emailId,
       participant: {
         id: inserted.id,
         passToken: inserted.pass_token,
