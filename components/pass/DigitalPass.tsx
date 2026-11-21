@@ -29,7 +29,8 @@ export function DigitalPass({
   currentStep = 1,
 }: DigitalPassProps) {
   // Submission link URL encoded in the pass
-  const submitUrl = `https://wildhaibro.in/s/${token}`;
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://wildstone.vigorspace.co";
+  const submitUrl = `${appBaseUrl}/s/${token}`;
 
   return (
     <div className="max-w-md mx-auto">

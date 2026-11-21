@@ -26,7 +26,7 @@ export async function sendPassEmail({
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || "Wild Hai Bro <pass@wildstone.vigorspace.co>";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://wildhaibro.in";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://wildstone.vigorspace.co";
   const passUrl = `${appUrl}/pass/${passToken}`;
 
   const collegeObj = collegeId ? kolkataColleges.find((c) => c.id === collegeId) : null;

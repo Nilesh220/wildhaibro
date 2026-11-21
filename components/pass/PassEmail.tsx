@@ -25,7 +25,7 @@ export function PassEmailPreview({
       {/* Email metadata header */}
       <div className="text-xs text-neutral-400 pb-4 mb-4 border-b border-neutral-800 flex justify-between">
         <div>
-          <p><strong className="text-neutral-200">From:</strong> pass@wildhaibro.in</p>
+          <p><strong className="text-neutral-200">From:</strong> pass@wildstone.vigorspace.co</p>
           <p><strong className="text-neutral-200">Subject:</strong> Your Wild Hai Bro Kolkata Fest Pass is Here</p>
         </div>
         <span className="text-[10px] bg-neutral-900 border border-neutral-700 px-2 py-1 h-fit rounded text-neutral-300">

@@ -68,7 +68,7 @@ export function Footer() {
           <span className="text-bone/30">•</span>
           <button className="hover:text-bone transition-colors">Privacy Notice</button>
           <span className="text-bone/30">•</span>
-          <a href="mailto:support@wildhaibro.in" className="hover:text-bone transition-colors">Contact Support</a>
+          <a href="mailto:pass@wildstone.vigorspace.co" className="hover:text-bone transition-colors">Contact Support</a>
         </div>
 
         {/* Responsible Notice without unverified legal claims */}

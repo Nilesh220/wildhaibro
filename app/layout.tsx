@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://wildstone.vigorspace.co"),
   title: "WILD HAI BRO | Kolkata Campus Tour",
   description:
     "Recognising the raw, representing the wild. Wild Stone's campus rap activation — games, vibes, and free perfume. Register now.",
