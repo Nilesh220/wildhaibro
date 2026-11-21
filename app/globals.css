@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@theme {
+  /* Wild Hai Bro Design Tokens */
+  --color-wild-orange: #F0410C;
+  --color-bone: #E4E1D8;
+  --color-ink: #000000;
+  --color-ink-2: #0C0C0C;
+  --color-ember: #531604;
+  --color-logo-red: #E3262B;
+
+  /* Fragrance bottle colors */
+  --color-frag-edge: #1a4b8c;
+  --color-frag-king: #2d8a4e;
+  --color-frag-icon: #c41e3a;
+  --color-frag-hydra: #0d7a7a;
+  --color-frag-nightrider: #b8860b;
+
+  /* Fonts - loaded via Google Fonts link */
+  --font-display: "Zen Dots", "Impact", sans-serif;
+  --font-label: "Goldman", "Arial Black", sans-serif;
+  --font-body: "Lexend", "Segoe UI", sans-serif;
+  --font-accent: "Tourney", "Impact", sans-serif;
+
+  /* Spacing - 8px grid */
+  --spacing-1: 8px;
+  --spacing-2: 16px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-8: 64px;
+  --spacing-10: 80px;
+  --spacing-12: 96px;
+
+  /* Border radius for chamfer */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* Animations */
+  --animate-stamp: stamp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-shake: shake 0.3s ease-in-out;
+  --animate-slide-up: slideUp 0.5s ease-out forwards;
+  --animate-print: print 0.8s ease-out forwards;
+  --animate-scramble: scramble 0.9s steps(10) forwards;
+}
+
+/* Custom keyframes */
+@keyframes stamp {
+  0% { transform: scale(3) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes print {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Base styles */
+html {
+  scroll-behavior: auto; /* No smooth scroll on form pages */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-ink);
+  color: var(--color-bone);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus ring styles */
+*:focus-visible {
+  outline: 2px solid var(--color-wild-orange);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-wild-orange);
+  color: var(--color-ink);
+}
+
+/* Chamfer clip path utility */
+.clip-chamfer {
+  clip-path: polygon(
+    0 16px,
+    16px 0,
+    100% 0,
+    100% calc(100% - 16px),
+    calc(100% - 16px) 100%,
+    0 100%
+  );
+}
+
+.clip-chamfer-sm {
+  clip-path: polygon(
+    0 8px,
+    8px 0,
+    100% 0,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    0 100%
+  );
+}
+
+/* Hazard stripe pattern */
+.hazard-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-wild-orange),
+    var(--color-wild-orange) 10px,
+    var(--color-ink) 10px,
+    var(--color-ink) 20px
+  );
+}
+
+.hazard-stripes-thin {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-wild-orange),
+    var(--color-wild-orange) 4px,
+    var(--color-ink) 4px,
+    var(--color-ink) 8px
+  );
+}
+
+/* Checker pattern */
+.checker-band {
+  background-image:
+    repeating-conic-gradient(#000 0% 25%, #fff 0% 50%);
+  background-size: 16px 16px;
+}
+
+/* Perforated edge */
+.perforated-edge {
+  background-image: radial-gradient(circle, var(--color-ink) 4px, transparent 4px);
+  background-size: 16px 1px;
+  background-repeat: repeat-x;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ember);
+  border-radius: 3px;
+}
