@@ -11,6 +11,7 @@ type SubmissionFormProps = {
   rapName?: string;
   collegeName?: string;
   isDemo?: boolean;
+  token?: string;
   onSuccess?: () => void;
 };
 
@@ -19,6 +20,7 @@ export function SubmissionForm({
   rapName = "MC HYDRA",
   collegeName = "Jadavpur University",
   isDemo = true,
+  token = "demo-token",
   onSuccess,
 }: SubmissionFormProps) {
   const [images, setImages] = useState<string[]>([]);
@@ -45,7 +47,7 @@ export function SubmissionForm({
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length === 0) {
       setError("Please upload at least 1 story screenshot.");
@@ -61,19 +63,34 @@ export function SubmissionForm({
     }
 
     setIsSubmitting(true);
-    let cur = 0;
-    const interval = setInterval(() => {
-      cur += 25;
-      setProgress(cur);
-      if (cur >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsSubmitting(false);
-          setIsSubmitted(true);
-          if (onSuccess) onSuccess();
-        }, 400);
+    setProgress(30);
+    try {
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          passToken: token,
+          productPreference: selectedProduct,
+          tagConfirmed: true,
+          screenshotCount: images.length,
+        }),
+      });
+      setProgress(80);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Submission failed");
       }
-    }, 250);
+      setProgress(100);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        if (onSuccess) onSuccess();
+      }, 300);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Submission failed.";
+      setError(msg);
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -96,7 +113,7 @@ export function SubmissionForm({
             </p>
 
             <a
-              href="/s/demo-token/done"
+              href={`/s/${token}/done`}
               className="inline-block bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold px-8 py-3.5 uppercase text-xs tracking-wider clip-chamfer-sm hover:brightness-110"
             >
               View Certified Stamp &amp; Share ↗

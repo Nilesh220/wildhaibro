@@ -3,7 +3,23 @@
 import { CornerBrackets } from "@/components/brand/CornerBrackets";
 import { BarcodeSticker } from "@/components/brand/BarcodeSticker";
 
-export function PassEmailPreview() {
+type PassEmailProps = {
+  fullName?: string;
+  passCode?: string;
+  collegeName?: string;
+  venue?: string;
+  dateStr?: string;
+  token?: string;
+};
+
+export function PassEmailPreview({
+  fullName = "Aryan Sen",
+  passCode = "WILD-882X",
+  collegeName = "Jadavpur University",
+  venue = "Main Auditorium Grounds",
+  dateStr = "Fri, 15 Jan • 10:00 AM - 6:00 PM",
+  token = "demo-token",
+}: PassEmailProps) {
   return (
     <div className="max-w-xl mx-auto bg-black text-[#E4E1D8] font-sans p-6 rounded-md border border-neutral-800 shadow-2xl">
       {/* Email metadata header */}
@@ -48,11 +64,11 @@ export function PassEmailPreview() {
           </div>
         </div>
 
-        <h2 className="text-2xl font-black mb-2 tracking-tight">
-          YO ARYAN SEN, YOU&apos;RE IN THE CYPHER.
+        <h2 className="text-2xl font-black mb-2 tracking-tight uppercase">
+          YO {fullName}, YOU&apos;RE IN THE CYPHER.
         </h2>
         <p className="text-xs text-black/80 mb-4 leading-relaxed">
-          Your campus entry pass for <strong>Jadavpur University</strong> has been locked in.
+          Your campus entry pass for <strong>{collegeName}</strong> has been locked in.
           Show this QR code at the stall on event day to play games and claim your Wild Stone perfume.
         </p>
 
@@ -72,18 +88,18 @@ export function PassEmailPreview() {
               <rect x="13" y="75" width="12" height="12" fill="currentColor" />
               <rect x="40" y="40" width="20" height="20" fill="currentColor" />
             </svg>
-            <p className="font-mono text-[10px] font-bold text-black mt-1">PASS CODE: WILD-882X</p>
+            <p className="font-mono text-[10px] font-bold text-black mt-1">PASS CODE: {passCode}</p>
           </div>
           <p className="text-[11px] text-[#E4E1D8]/70 mt-2">
-            Date: <strong>Fri, 15 Jan • 10:00 AM - 6:00 PM</strong><br />
-            Venue: <strong>Main Auditorium Grounds</strong>
+            Date: <strong>{dateStr}</strong><br />
+            Venue: <strong>{venue}</strong>
           </p>
         </div>
 
         {/* Big CTA */}
         <div className="text-center my-4">
           <a
-            href="/pass/demo-token"
+            href={`/pass/${token}`}
             className="inline-block bg-[#F0410C] text-black font-bold text-sm px-6 py-3 rounded uppercase tracking-wider shadow"
           >
             Open My Pass on Mobile ➔

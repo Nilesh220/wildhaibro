@@ -35,7 +35,9 @@ export function RapNameDropForm({ isDemo = true, onSuccess }: RapNameDropProps) 
     consentTerms: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [issuedPass, setIssuedPass] = useState<{ passToken?: string; passCode?: string } | null>(null);
 
   const generatedName = generateRapName(formData.fragrancePick, formData.artistPick);
 
@@ -64,9 +66,36 @@ export function RapNameDropForm({ isDemo = true, onSuccess }: RapNameDropProps) 
     setScreen(2);
   };
 
-  const handleFinish = () => {
-    setIsGenerated(true);
-    if (onSuccess) onSuccess({ ...formData, generatedRapName: generatedName });
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          generatedRapName: generatedName,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to generate rap pass.");
+      }
+      const participant = result.participant;
+      const passData = {
+        passToken: participant?.passToken || "wld_demo",
+        passCode: participant?.passCode || "WILD-PASS",
+      };
+      setIssuedPass(passData);
+      setIsGenerated(true);
+      if (onSuccess) onSuccess({ ...formData, generatedRapName: generatedName, ...passData });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed.";
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isGenerated) {
@@ -81,13 +110,14 @@ export function RapNameDropForm({ isDemo = true, onSuccess }: RapNameDropProps) 
               {generatedName}
             </h3>
             <p className="font-[family-name:var(--font-body)] text-xs text-bone/60 mb-4">
-              Real Name: {formData.fullName} • College: {kolkataColleges.find((c) => c.id === formData.collegeId)?.collegeName}
+              Real Name: {formData.fullName} • College: {kolkataColleges.find((c) => c.id === formData.collegeId)?.collegeName || "Kolkata"}
             </p>
 
             <div className="bg-ink-2 p-3 border border-bone/10 text-left text-xs space-y-1 mb-4 font-[family-name:var(--font-body)]">
+              <p><strong className="text-wild-orange font-[family-name:var(--font-label)]">PASS CODE:</strong> {issuedPass?.passCode || "WILD-882X"}</p>
               <p><strong className="text-wild-orange font-[family-name:var(--font-label)]">SCENT:</strong> Wild Stone {formData.fragrancePick.toUpperCase()}</p>
               <p><strong className="text-wild-orange font-[family-name:var(--font-label)]">ARTIST VIBE:</strong> {formData.artistPick}</p>
-              <p><strong className="text-wild-orange font-[family-name:var(--font-label)]">COUPON:</strong> WILD15-RAPDROP</p>
+              <p><strong className="text-wild-orange font-[family-name:var(--font-label)]">COUPON:</strong> WILD15</p>
             </div>
 
             <div className="flex justify-between items-center mb-6">
@@ -96,7 +126,7 @@ export function RapNameDropForm({ isDemo = true, onSuccess }: RapNameDropProps) 
             </div>
 
             <a
-              href="/pass/demo-token"
+              href={`/pass/${issuedPass?.passToken || "demo-token"}`}
               className="inline-block w-full bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold py-3 uppercase text-xs tracking-wider"
             >
               Open Full Rap Pass ↗
@@ -305,11 +335,19 @@ export function RapNameDropForm({ isDemo = true, onSuccess }: RapNameDropProps) 
             </span>
           </div>
 
+          {/* Error display */}
+          {error && (
+            <p className="text-logo-red text-xs font-[family-name:var(--font-label)] font-bold animate-[shake_0.3s_ease-in-out]">
+              ⚠️ {error}
+            </p>
+          )}
+
           <button
             onClick={handleFinish}
-            className="w-full bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold py-3.5 text-sm uppercase tracking-wider clip-chamfer-sm hover:brightness-110 transition-all shadow-[3px_3px_0px_#E4E1D8]"
+            disabled={isSubmitting}
+            className="w-full bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold py-3.5 text-sm uppercase tracking-wider clip-chamfer-sm hover:brightness-110 transition-all shadow-[3px_3px_0px_#E4E1D8] disabled:opacity-50"
           >
-            ISSUE PASS AS &ldquo;{generatedName}&rdquo; ➔
+            {isSubmitting ? "ISSUING PASS..." : <>ISSUE PASS AS &ldquo;{generatedName}&rdquo; ➔</>}
           </button>
         </div>
       )}

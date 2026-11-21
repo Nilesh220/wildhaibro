@@ -26,11 +26,13 @@ export function CypherFlowForm({ isDemo = true, onSuccess }: CypherFlowProps) {
     consentMarketing: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDone, setIsDone] = useState(false);
+  const [issuedPass, setIssuedPass] = useState<{ passToken?: string; passCode?: string } | null>(null);
 
   const totalSteps = 6;
 
-  const nextStep = () => {
+  const nextStep = async () => {
     setError(null);
     if (step === 0 && (!formData.fullName || formData.fullName.trim().length < 2)) {
       setError("Enter your full name.");
@@ -60,8 +62,31 @@ export function CypherFlowForm({ isDemo = true, onSuccess }: CypherFlowProps) {
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      setIsDone(true);
-      if (onSuccess) onSuccess(formData);
+      setIsSubmitting(true);
+      try {
+        const res = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || "Failed to issue pass.");
+        }
+        const participant = result.participant;
+        const passData = {
+          passToken: participant?.passToken || "wld_demo",
+          passCode: participant?.passCode || "WILD-PASS",
+        };
+        setIssuedPass(passData);
+        setIsDone(true);
+        if (onSuccess) onSuccess({ ...formData, ...passData });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Registration failed.";
+        setError(msg);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -87,14 +112,14 @@ export function CypherFlowForm({ isDemo = true, onSuccess }: CypherFlowProps) {
           PASS MIL GAYA!
         </h3>
         <p className="font-[family-name:var(--font-body)] text-sm text-bone/70 mb-4">
-          Yo {formData.fullName}, your pass has been generated. Check your WhatsApp &amp; Email!
+          Yo {formData.fullName}, your pass has been generated and saved.
         </p>
         <div className="p-3 bg-ink-2 border border-bone/20 font-mono text-xs text-left mb-6">
-          <p className="text-wild-orange font-bold">TOKEN: PASS_CYPHER_990</p>
-          <p>CAMPUS: {kolkataColleges.find((c) => c.id === formData.collegeId)?.collegeName}</p>
+          <p className="text-wild-orange font-bold">PASS CODE: {issuedPass?.passCode || "WILD-882X"}</p>
+          <p>CAMPUS: {kolkataColleges.find((c) => c.id === formData.collegeId)?.collegeName || "Kolkata"}</p>
         </div>
         <a
-          href="/pass/demo-token"
+          href={`/pass/${issuedPass?.passToken || "demo-token"}`}
           className="inline-block w-full bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold py-3 uppercase text-xs"
         >
           Open Pass Link ↗
@@ -327,9 +352,10 @@ export function CypherFlowForm({ isDemo = true, onSuccess }: CypherFlowProps) {
         </span>
         <button
           onClick={nextStep}
-          className="bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold px-6 py-2.5 text-sm uppercase tracking-wider clip-chamfer-sm hover:brightness-110 active:translate-x-0.5 transition-all"
+          disabled={isSubmitting}
+          className="bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold px-6 py-2.5 text-sm uppercase tracking-wider clip-chamfer-sm hover:brightness-110 active:translate-x-0.5 transition-all disabled:opacity-50"
         >
-          {step === totalSteps - 1 ? "LOCK IT IN ➔" : "CONTINUE ➔"}
+          {isSubmitting ? "SAVING..." : step === totalSteps - 1 ? "LOCK IT IN ➔" : "CONTINUE ➔"}
         </button>
       </div>
     </div>

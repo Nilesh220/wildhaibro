@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { SubmissionForm } from "@/components/forms/SubmissionForm";
 import { StepTrack } from "@/components/brand/StepTrack";
+import { createClient } from "@supabase/supabase-js";
+import { kolkataColleges } from "@/config/event";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nnhmrnhroehdhgeetzfi.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_LTQoUFZEWLe1bZOLwr1xEA_LEbr18qQ";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function SubmissionRoute({
   params,
@@ -8,6 +14,24 @@ export default async function SubmissionRoute({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+
+  let participant: any = null;
+  if (token && token !== "demo-token") {
+    const { data } = await supabase
+      .from("participants")
+      .select("*, colleges(*)")
+      .eq("pass_token", token)
+      .maybeSingle();
+    participant = data;
+  }
+
+  const matchingCollege = participant?.college_id 
+    ? kolkataColleges.find((c) => c.id === participant.college_id) 
+    : null;
+
+  const collegeName = participant?.colleges?.college_name || matchingCollege?.collegeName || participant?.college_other || "Jadavpur University";
+  const fullName = participant?.full_name || "Aryan Sen";
+  const rapName = participant?.generated_rap_name || "MC HYDRA";
 
   return (
     <div className="min-h-screen bg-ink text-bone py-10 px-4">
@@ -32,10 +56,11 @@ export default async function SubmissionRoute({
 
         {/* Submission Form */}
         <SubmissionForm
-          participantName="Aryan Sen"
-          rapName="MC HYDRA"
-          collegeName="Jadavpur University"
-          isDemo={true}
+          participantName={fullName}
+          rapName={rapName}
+          collegeName={collegeName}
+          isDemo={token === "demo-token"}
+          token={token}
         />
       </div>
     </div>

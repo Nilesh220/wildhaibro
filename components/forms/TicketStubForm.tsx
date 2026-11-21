@@ -15,10 +15,16 @@ type TicketStubProps = {
   onSuccess?: (data: RegistrationData) => void;
 };
 
+type IssuedPassData = RegistrationData & {
+  passToken?: string;
+  passCode?: string;
+};
+
 export function TicketStubForm({ isDemo = true, showReviewHeader = false, onSuccess }: TicketStubProps) {
   const [emailTypo, setEmailTypo] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [issuedPass, setIssuedPass] = useState<RegistrationData | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [issuedPass, setIssuedPass] = useState<IssuedPassData | null>(null);
 
   const {
     register,
@@ -51,13 +57,33 @@ export function TicketStubForm({ isDemo = true, showReviewHeader = false, onSucc
     }
   };
 
-  const onSubmit = (data: RegistrationData) => {
+  const onSubmit = async (data: RegistrationData) => {
     setIsSubmitting(true);
-    setTimeout(() => {
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Failed to register. Please check your details.");
+      }
+      const participant = result.participant;
+      const passInfo: IssuedPassData = {
+        ...data,
+        passToken: participant?.passToken || "wld_demo",
+        passCode: participant?.passCode || "WILD-PASS",
+      };
+      setIssuedPass(passInfo);
+      if (onSuccess) onSuccess(passInfo);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed. Please check network.";
+      setSubmitError(msg);
+    } finally {
       setIsSubmitting(false);
-      setIssuedPass(data);
-      if (onSuccess) onSuccess(data);
-    }, 700);
+    }
   };
 
   if (issuedPass) {
@@ -73,13 +99,13 @@ export function TicketStubForm({ isDemo = true, showReviewHeader = false, onSucc
           Yo {issuedPass.fullName}, your pass for {selectedCollege?.collegeName || "Kolkata"} is ready.
         </p>
         <div className="my-4 p-3 bg-ink/5 border border-dashed border-ink/30 text-left text-xs space-y-1 font-[family-name:var(--font-body)]">
-          <p><strong className="font-[family-name:var(--font-label)]">PASS CODE:</strong> <span className="font-mono font-bold text-wild-orange">WILD-882X</span></p>
+          <p><strong className="font-[family-name:var(--font-label)]">PASS CODE:</strong> <span className="font-mono font-bold text-wild-orange">{issuedPass.passCode || "WILD-882X"}</span></p>
           <p><strong className="font-[family-name:var(--font-label)]">EMAIL:</strong> {issuedPass.email}</p>
           <p><strong className="font-[family-name:var(--font-label)]">PHONE:</strong> +91 {issuedPass.phone}</p>
-          <p><strong className="font-[family-name:var(--font-label)]">VENUE:</strong> {selectedCollege?.venue}</p>
+          <p><strong className="font-[family-name:var(--font-label)]">VENUE:</strong> {selectedCollege?.venue || "Main Auditorium"}</p>
         </div>
         <a
-          href="/pass/demo-token"
+          href={`/pass/${issuedPass.passToken || "demo-token"}`}
           className="inline-block w-full bg-wild-orange text-ink font-[family-name:var(--font-label)] font-bold py-3 uppercase text-xs tracking-wider rounded-xs hover:brightness-105"
         >
           View Full QR Ticket ↗
@@ -309,6 +335,13 @@ export function TicketStubForm({ isDemo = true, showReviewHeader = false, onSucc
               <span>Opt in for event updates and future cypher announcements (optional).</span>
             </label>
           </div>
+
+          {/* Error Message */}
+          {submitError && (
+            <div className="p-3 bg-logo-red/10 border border-logo-red text-logo-red text-xs font-[family-name:var(--font-body)] rounded-xs">
+              ⚠️ {submitError}
+            </div>
+          )}
 
           {/* Submit CTA */}
           <button

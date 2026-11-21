@@ -2,6 +2,12 @@ import { DigitalPass } from "@/components/pass/DigitalPass";
 import { PassEmailPreview } from "@/components/pass/PassEmail";
 import Link from "next/link";
 import { HazardStripes } from "@/components/brand/HazardStripes";
+import { createClient } from "@supabase/supabase-js";
+import { kolkataColleges } from "@/config/event";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nnhmrnhroehdhgeetzfi.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_LTQoUFZEWLe1bZOLwr1xEA_LEbr18qQ";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function PassPage({
   params,
@@ -9,6 +15,32 @@ export default async function PassPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+
+  // Fetch participant from Supabase if token exists
+  let participant: any = null;
+  if (token && token !== "demo-token") {
+    const { data } = await supabase
+      .from("participants")
+      .select("*, colleges(*)")
+      .eq("pass_token", token)
+      .maybeSingle();
+    participant = data;
+  }
+
+  const matchingCollege = participant?.college_id 
+    ? kolkataColleges.find((c) => c.id === participant.college_id) 
+    : null;
+
+  const collegeName = participant?.colleges?.college_name || matchingCollege?.collegeName || participant?.college_other || "Jadavpur University";
+  const venue = participant?.colleges?.venue || matchingCollege?.venue || "Main Auditorium Grounds";
+  const dateStr = matchingCollege 
+    ? "Fri, 15 Jan • 10:00 AM - 6:00 PM"
+    : "Event Day • 10:00 AM";
+
+  const fullName = participant?.full_name || "Aryan Sen";
+  const passCode = participant?.pass_code || "WILD-882X";
+  const rapName = participant?.generated_rap_name || "MC HYDRA";
+  const fragrance = participant?.fragrance_preference || "Hydra Energy";
 
   return (
     <div className="min-h-screen bg-ink text-bone py-10 px-4">
@@ -42,7 +74,16 @@ export default async function PassPage({
             </p>
           </div>
 
-          <DigitalPass token={token} />
+          <DigitalPass
+            token={token}
+            passCode={passCode}
+            fullName={fullName}
+            rapName={rapName}
+            collegeName={collegeName}
+            venue={venue}
+            dateStr={dateStr}
+            fragrance={fragrance}
+          />
         </div>
 
         <HazardStripes className="max-w-md mx-auto" />
@@ -61,7 +102,14 @@ export default async function PassPage({
             </p>
           </div>
 
-          <PassEmailPreview />
+          <PassEmailPreview
+            fullName={fullName}
+            passCode={passCode}
+            collegeName={collegeName}
+            venue={venue}
+            dateStr={dateStr}
+            token={token}
+          />
         </div>
       </div>
     </div>

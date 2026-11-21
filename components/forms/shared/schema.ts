@@ -36,9 +36,10 @@ export const registrationSchema = z.object({
     .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
   collegeId: z.string().min(1, "Pick your college"),
   collegeOther: z.string().optional(),
-  yearOfStudy: z.enum(["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year", "PG"], {
-    errorMap: () => ({ message: "Pick your year" }),
-  }),
+  yearOfStudy: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim() ? v : "1st Year")),
   instagramHandle: z
     .string()
     .min(1, "Enter your Instagram handle")

@@ -1,12 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { CornerBrackets } from "@/components/brand/CornerBrackets";
 import { BarcodeSticker } from "@/components/brand/BarcodeSticker";
 import { StepTrack } from "@/components/brand/StepTrack";
 import { HazardStripes } from "@/components/brand/HazardStripes";
+import { createClient } from "@supabase/supabase-js";
+import { kolkataColleges } from "@/config/event";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nnhmrnhroehdhgeetzfi.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_LTQoUFZEWLe1bZOLwr1xEA_LEbr18qQ";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function DonePage() {
+  const params = useParams();
+  const token = (params?.token as string) || "demo-token";
+
+  const [participant, setParticipant] = useState<any>(null);
+
+  useEffect(() => {
+    if (token && token !== "demo-token") {
+      supabase
+        .from("participants")
+        .select("*, colleges(*)")
+        .eq("pass_token", token)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setParticipant(data);
+        });
+    }
+  }, [token]);
+
+  const matchingCollege = participant?.college_id
+    ? kolkataColleges.find((c) => c.id === participant.college_id)
+    : null;
+
+  const rapName = participant?.generated_rap_name || "MC HYDRA";
+  const collegeName = participant?.colleges?.college_name || matchingCollege?.collegeName || participant?.college_other || "Jadavpur University";
+  const fragrance = participant?.fragrance_preference || "Hydra Energy";
+  const coupon = participant?.coupon_code || "WILD15";
+
   return (
     <div className="min-h-screen bg-ink text-bone py-10 px-4">
       {/* Top Bar */}
@@ -53,7 +88,7 @@ export default function DonePage() {
                     YOUR EXCLUSIVE RAP IDENTITY
                   </span>
                   <h3 className="font-[family-name:var(--font-display)] text-3xl text-bone mt-0.5">
-                    MC HYDRA
+                    {rapName}
                   </h3>
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -65,9 +100,9 @@ export default function DonePage() {
               </div>
 
               <div className="space-y-1.5 text-xs font-[family-name:var(--font-body)] text-bone/80 border-t border-bone/10 pt-3">
-                <p><span className="text-bone/50">Campus:</span> Jadavpur University</p>
-                <p><span className="text-bone/50">Preferred Fragrance:</span> Wild Stone Hydra Energy EDP</p>
-                <p><span className="text-bone/50">Fest Coupon (Sample):</span> <strong className="text-wild-orange font-mono">QEPRTX</strong> <span className="text-[10px] bg-wild-orange/20 text-wild-orange px-1 py-0.5 rounded-xs ml-1">PLACEHOLDER</span></p>
+                <p><span className="text-bone/50">Campus:</span> {collegeName}</p>
+                <p><span className="text-bone/50">Preferred Fragrance:</span> Wild Stone {fragrance}</p>
+                <p><span className="text-bone/50">Fest Coupon:</span> <strong className="text-wild-orange font-mono">{coupon}</strong></p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-bone/10 flex justify-between items-center">
